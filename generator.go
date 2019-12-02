@@ -37,6 +37,7 @@ type structField struct {
 	TypeRef      string
 	TypePrefix   string
 	Nullable     bool
+	Default      interface{}
 	PropertyName string
 	Required     bool
 	Embedded     bool
@@ -99,18 +100,25 @@ func (gt goType) print(buf *bytes.Buffer) {
 			sfTypeStr = "*" + sfTypeStr
 		}
 
-		var tagString string
+		var tags []string
+		if sf.Default != nil {
+			tags = append(tags, fmt.Sprintf("default:\"%v\"", sf.Default))
+		}
+
 		if !sf.Embedded {
-			tagString = "`json:\"" + sf.PropertyName
+			var tagString string
+			tagString = "json:\"" + sf.PropertyName
 			if !sf.Required {
 				if *ptrForOmit && sf.PtrForOmit && !sf.Nullable {
 					sfTypeStr = "*" + sfTypeStr
 				}
 				tagString += ",omitempty"
 			}
-			tagString += "\"`"
+			tagString += "\""
+			tags = append(tags, tagString)
 		}
-		buf.WriteString(fmt.Sprintf("%s %s %s\n", sf.Name, sfTypeStr, tagString))
+		outTags := fmt.Sprintf("`%s`", strings.Join(tags, ","))
+		buf.WriteString(fmt.Sprintf("%s %s %s\n", sf.Name, sfTypeStr, outTags))
 	}
 	buf.WriteString("}\n")
 }
@@ -494,6 +502,7 @@ func processType(s *metaSchema, pName, pDesc, path, parentPath string) (typeRef 
 		sf := structField{
 			PropertyName: propName,
 			Required:     required.Has(propName),
+			Default:      propSchema.Default,
 		}
 
 		var fieldName string
