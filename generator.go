@@ -117,7 +117,7 @@ func (gt goType) print(buf *bytes.Buffer) {
 			tagString += "\""
 			tags = append(tags, tagString)
 		}
-		outTags := fmt.Sprintf("`%s`", strings.Join(tags, ","))
+		outTags := fmt.Sprintf("`%s`", strings.Join(tags, " "))
 		buf.WriteString(fmt.Sprintf("%s %s %s\n", sf.Name, sfTypeStr, outTags))
 	}
 	buf.WriteString("}\n")
